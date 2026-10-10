@@ -115,3 +115,12 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/hotaru-deploy
           token: ${{ steps.app-token.outputs.token }}
+
+      - name: Check the current image tag
+        id: tag
+        run: |
+          if [ "$(yq '.image.tag' values/hotaru-api.yaml)" = "$IMAGE_TAG" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi

@@ -145,3 +145,20 @@ jobs:
           git switch -c "bump/hotaru-api-${IMAGE_TAG::7}"
           git commit -am "hotaru-apiのイメージを${IMAGE_TAG::7}に更新"
           git push --force origin HEAD
+
+      - name: Create a pull request
+        if: steps.tag.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          branch="bump/hotaru-api-${IMAGE_TAG::7}"
+          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            echo "A pull request for $branch is already open"
+            exit 0
+          fi
+          gh pr create --base main --head "$branch" --title "hotaru-apiのイメージを${IMAGE_TAG::7}に更新" --body-file - <<BODY
+          hotaru-apiのmainでビルドしたイメージに、image.tagを書き換える。
+
+          - コミット: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$IMAGE_TAG
+          - CI: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          BODY

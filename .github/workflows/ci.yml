@@ -138,3 +138,10 @@ jobs:
           user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
           git config user.name "${APP_SLUG}[bot]"
           git config user.email "${user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+      - name: Push the bump branch
+        if: steps.tag.outputs.changed == 'true'
+        run: |
+          git switch -c "bump/hotaru-api-${IMAGE_TAG::7}"
+          git commit -am "hotaru-apiのイメージを${IMAGE_TAG::7}に更新"
+          git push --force origin HEAD
